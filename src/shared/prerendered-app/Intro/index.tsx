@@ -2,7 +2,7 @@ import { h, Component } from 'preact';
 
 import { linkRef } from 'shared/prerendered-app/util';
 import '../../custom-els/loading-spinner';
-import logo from 'url:./imgs/logo.svg';
+import logo from 'url:./imgs/logo.png';
 import githubLogo from 'url:./imgs/github-logo.svg';
 import largePhoto from 'url:./imgs/demos/demo-large-photo.jpg';
 import artwork from 'url:./imgs/demos/demo-artwork.jpg';
@@ -14,7 +14,7 @@ import smallSectionAsset from 'url:./imgs/info-content/small.svg';
 import simpleSectionAsset from 'url:./imgs/info-content/simple.svg';
 import secureSectionAsset from 'url:./imgs/info-content/secure.svg';
 import logoIcon from 'url:./imgs/demos/icon-demo-logo.png';
-import logoWithText from 'data-url-text:./imgs/logo-with-text.svg';
+import logoWithText from 'data-url:./imgs/logo-with-text.png';
 import * as style from './style.css';
 import type SnackBarElement from 'shared/custom-els/snack-bar';
 import 'shared/custom-els/snack-bar';
@@ -44,9 +44,9 @@ const demos = [
     iconUrl: deviceScreenIcon,
   },
   {
-    description: 'SVG 图标',
-    size: '13KB',
-    filename: 'squoosh.svg',
+    description: 'PNG 图标',
+    size: '782KB',
+    filename: 'ricepic.png',
     url: logo,
     iconUrl: logoIcon,
   },
@@ -232,9 +232,9 @@ export default class Intro extends Component<Props, State> {
             <img
               class={style.logo}
               src={logoWithText}
-              alt="Squoosh"
-              width="539"
-              height="162"
+              alt="RicePic"
+              width="2172"
+              height="724"
             />
           </h1>
           <div class={style.loadImg}>
@@ -351,7 +351,7 @@ export default class Intro extends Component<Props, State> {
                 <div class={style.infoTextWrapper}>
                   <h2 class={style.infoTitle}>更小</h2>
                   <p class={style.infoCaption}>
-                    更小的图片意味着更快的加载速度。Squoosh
+                    更小的图片意味着更快的加载速度。RicePic
                     可以在保持高质量的同时减小文件体积。
                   </p>
                 </div>
@@ -400,7 +400,7 @@ export default class Intro extends Component<Props, State> {
                 <div class={style.infoTextWrapper}>
                   <h2 class={style.infoTitle}>安全</h2>
                   <p class={style.infoCaption}>
-                    担心隐私？图片不会离开你的设备，Squoosh
+                    担心隐私？图片不会离开你的设备，RicePic
                     会在本地完成所有处理。
                   </p>
                 </div>
@@ -439,7 +439,7 @@ export default class Intro extends Component<Props, State> {
                   href="https://github.com/GoogleChromeLabs/squoosh"
                 >
                   <img src={githubLogo} alt="" width="10" height="10" />
-                  GitHub 源码
+                  GitHub
                 </a>
               </footer>
             </div>

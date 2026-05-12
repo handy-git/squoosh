@@ -885,7 +885,7 @@ export default class Compress extends Component<Props, State> {
       const downloadUrl = URL.createObjectURL(zipBlob);
       const link = document.createElement('a');
       link.href = downloadUrl;
-      link.download = `squoosh-batch-${Date.now()}.zip`;
+      link.download = `ricepic-batch-${Date.now()}.zip`;
       document.body.appendChild(link);
       link.click();
       link.remove();

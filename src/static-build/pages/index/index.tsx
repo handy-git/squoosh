@@ -28,14 +28,14 @@ const Index: FunctionalComponent<Props> = () => (
   <html lang="zh-CN">
     <head>
       <meta charSet="utf-8" />
-      <title>Squoosh</title>
+      <title>RicePic</title>
       <meta
         name="description"
-        content="Squoosh 是一款在浏览器中压缩、比较图片并尝试不同编码器的图片优化工具。"
+        content="RicePic 是一款在浏览器中压缩、比较图片并尝试不同编码器的图片优化工具。"
       />
       <meta name="twitter:card" content="summary" />
-      <meta name="twitter:site" content="@SquooshApp" />
-      <meta property="og:title" content="Squoosh" />
+      <meta name="twitter:site" content="@RicePic" />
+      <meta property="og:title" content="RicePic" />
       <meta property="og:type" content="website" />
       <meta property="og:image" content={`${siteOrigin}${ogImage}`} />
       <meta
@@ -51,7 +51,7 @@ const Index: FunctionalComponent<Props> = () => (
       />
       <meta
         name="og:description"
-        content="Squoosh 是一款在浏览器中压缩、比较图片并尝试不同编码器的图片优化工具。"
+        content="RicePic 是一款在浏览器中压缩、比较图片并尝试不同编码器的图片优化工具。"
       />
       <meta
         name="viewport"
