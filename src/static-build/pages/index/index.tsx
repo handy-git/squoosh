@@ -27,6 +27,7 @@ interface Props {}
 const Index: FunctionalComponent<Props> = () => (
   <html lang="zh-CN">
     <head>
+      <meta charSet="utf-8" />
       <title>Squoosh</title>
       <meta
         name="description"
