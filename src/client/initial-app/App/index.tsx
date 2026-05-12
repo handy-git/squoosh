@@ -25,7 +25,8 @@ interface Props {}
 
 interface State {
   awaitingShareTarget: boolean;
-  file?: File;
+  files: File[];
+  selectedFileIndex: number;
   isEditorOpen: Boolean;
   Compress?: typeof import('client/lazy-app/Compress').default;
 }
@@ -36,7 +37,8 @@ export default class App extends Component<Props, State> {
       'share-target',
     ),
     isEditorOpen: false,
-    file: undefined,
+    files: [],
+    selectedFileIndex: 0,
     Compress: undefined,
   };
 
@@ -50,7 +52,7 @@ export default class App extends Component<Props, State> {
         this.setState({ Compress: module.default });
       })
       .catch(() => {
-        this.showSnack('Failed to load app');
+        this.showSnack('应用加载失败');
       });
 
     swBridgePromise.then(async ({ offliner, getSharedImage }) => {
@@ -60,7 +62,11 @@ export default class App extends Component<Props, State> {
       // Remove the ?share-target from the URL
       history.replaceState('', '', '/');
       this.openEditor();
-      this.setState({ file, awaitingShareTarget: false });
+      this.setState({
+        files: [file],
+        selectedFileIndex: 0,
+        awaitingShareTarget: false,
+      });
     });
 
     // Since iOS 10, Apple tries to prevent disabling pinch-zoom. This is great in theory, but
@@ -76,21 +82,33 @@ export default class App extends Component<Props, State> {
 
   private onFileDrop = ({ files }: FileDropEvent) => {
     if (!files || files.length === 0) return;
-    const file = files[0];
+    const nextFiles = Array.from(files);
     this.openEditor();
-    this.setState({ file });
+    this.setState({ files: nextFiles, selectedFileIndex: 0 });
   };
 
-  private onIntroPickFile = (file: File) => {
+  private onIntroPickFiles = (files: File[]) => {
+    if (files.length === 0) return;
     this.openEditor();
-    this.setState({ file });
+    this.setState({ files, selectedFileIndex: 0 });
+  };
+
+  private onSelectFile = (selectedFileIndex: number) => {
+    this.setState({ selectedFileIndex });
+  };
+
+  private onAddFiles = (nextFiles: File[]) => {
+    if (nextFiles.length === 0) return;
+    this.setState((state) => ({
+      files: [...state.files, ...nextFiles],
+    }));
   };
 
   private showSnack = (
     message: string,
     options: SnackOptions = {},
   ): Promise<string> => {
-    if (!this.snackbar) throw Error('Snackbar missing');
+    if (!this.snackbar) throw Error('Snackbar 缺失');
     return this.snackbar.showSnackbar(message, options);
   };
 
@@ -109,21 +127,36 @@ export default class App extends Component<Props, State> {
 
   render(
     {}: Props,
-    { file, isEditorOpen, Compress, awaitingShareTarget }: State,
+    {
+      files,
+      selectedFileIndex,
+      isEditorOpen,
+      Compress,
+      awaitingShareTarget,
+    }: State,
   ) {
-    const showSpinner = awaitingShareTarget || (isEditorOpen && !Compress);
+    const showSpinner =
+      awaitingShareTarget || (isEditorOpen && files.length > 0 && !Compress);
 
     return (
       <div class={style.app}>
         <file-drop onfiledrop={this.onFileDrop} class={style.drop}>
           {showSpinner ? (
             <loading-spinner class={style.appLoader} />
-          ) : isEditorOpen ? (
+          ) : isEditorOpen && files.length > 0 ? (
             Compress && (
-              <Compress file={file!} showSnack={this.showSnack} onBack={back} />
+              <Compress
+                file={files[selectedFileIndex]}
+                files={files}
+                selectedFileIndex={selectedFileIndex}
+                showSnack={this.showSnack}
+                onBack={back}
+                onSelectFile={this.onSelectFile}
+                onAddFiles={this.onAddFiles}
+              />
             )
           ) : (
-            <Intro onFile={this.onIntroPickFile} showSnack={this.showSnack} />
+            <Intro onFiles={this.onIntroPickFiles} showSnack={this.showSnack} />
           )}
           <snack-bar ref={linkRef(this, 'snackbar')} />
         </file-drop>

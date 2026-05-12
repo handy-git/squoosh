@@ -97,6 +97,16 @@
   color: inherit;
 }
 
+.directory-btn {
+  composes: unbutton from global;
+  border: 2px solid var(--white);
+  border-radius: 7px;
+  color: var(--white);
+  font: inherit;
+  font-style: normal;
+  padding: 0.4em 0.8em;
+}
+
 .demos-container {
   position: relative;
   background: var(--deep-blue);
@@ -279,19 +289,6 @@
   from {
     opacity: 0;
   }
-}
-
-.install-btn {
-  composes: unbutton from global;
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: var(--deep-blue);
-  border-radius: 0.4em;
-  color: var(--white);
-  padding: 0.5em 1em;
-  font-size: 1.6rem;
-  animation: fade-in 600ms ease-in-out;
 }
 
 .demo-title {

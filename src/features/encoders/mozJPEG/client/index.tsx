@@ -114,7 +114,7 @@ export class Options extends Component<Props, State> {
             value={options.quality}
             onInput={this.onChange}
           >
-            Quality:
+            质量：
           </Range>
         </div>
         <label class={style.optionReveal}>
@@ -122,19 +122,19 @@ export class Options extends Component<Props, State> {
             checked={showAdvanced}
             onChange={linkState(this, 'showAdvanced')}
           />
-          Advanced settings
+          高级设置
         </label>
         <Expander>
           {showAdvanced ? (
             <div>
               <label class={style.optionTextFirst}>
-                Channels:
+                通道：
                 <Select
                   name="color_space"
                   value={options.color_space}
                   onChange={this.onChange}
                 >
-                  <option value={MozJpegColorSpace.GRAYSCALE}>Grayscale</option>
+                  <option value={MozJpegColorSpace.GRAYSCALE}>灰度</option>
                   <option value={MozJpegColorSpace.RGB}>RGB</option>
                   <option value={MozJpegColorSpace.YCbCr}>YCbCr</option>
                 </Select>
@@ -143,7 +143,7 @@ export class Options extends Component<Props, State> {
                 {options.color_space === MozJpegColorSpace.YCbCr ? (
                   <div>
                     <label class={style.optionToggle}>
-                      Auto subsample chroma
+                      自动色度抽样
                       <Checkbox
                         name="auto_subsample"
                         checked={options.auto_subsample}
@@ -160,13 +160,13 @@ export class Options extends Component<Props, State> {
                             value={options.chroma_subsample}
                             onInput={this.onChange}
                           >
-                            Subsample chroma by:
+                            色度抽样比例：
                           </Range>
                         </div>
                       )}
                     </Expander>
                     <label class={style.optionToggle}>
-                      Separate chroma quality
+                      单独设置色度质量
                       <Checkbox
                         name="separate_chroma_quality"
                         checked={options.separate_chroma_quality}
@@ -183,7 +183,7 @@ export class Options extends Component<Props, State> {
                             value={options.chroma_quality}
                             onInput={this.onChange}
                           >
-                            Chroma quality:
+                            色度质量：
                           </Range>
                         </div>
                       ) : null}
@@ -192,7 +192,7 @@ export class Options extends Component<Props, State> {
                 ) : null}
               </Expander>
               <label class={style.optionToggle}>
-                Pointless spec compliance
+                基线规范兼容
                 <Checkbox
                   name="baseline"
                   checked={options.baseline}
@@ -202,7 +202,7 @@ export class Options extends Component<Props, State> {
               <Expander>
                 {options.baseline ? null : (
                   <label class={style.optionToggle}>
-                    Progressive rendering
+                    渐进式渲染
                     <Checkbox
                       name="progressive"
                       checked={options.progressive}
@@ -214,7 +214,7 @@ export class Options extends Component<Props, State> {
               <Expander>
                 {options.baseline ? (
                   <label class={style.optionToggle}>
-                    Optimize Huffman table
+                    优化 Huffman 表
                     <Checkbox
                       name="optimize_coding"
                       checked={options.optimize_coding}
@@ -231,18 +231,18 @@ export class Options extends Component<Props, State> {
                   value={options.smoothing}
                   onInput={this.onChange}
                 >
-                  Smoothing:
+                  平滑：
                 </Range>
               </div>
               <label class={style.optionTextFirst}>
-                Quantization:
+                量化：
                 <Select
                   name="quant_table"
                   value={options.quant_table}
                   onChange={this.onChange}
                 >
                   <option value="0">JPEG Annex K</option>
-                  <option value="1">Flat</option>
+                  <option value="1">平坦</option>
                   <option value="2">MSSIM-tuned Kodak</option>
                   <option value="3">ImageMagick</option>
                   <option value="4">PSNR-HVS-M-tuned Kodak</option>
@@ -253,7 +253,7 @@ export class Options extends Component<Props, State> {
                 </Select>
               </label>
               <label class={style.optionToggle}>
-                Trellis multipass
+                Trellis 多轮处理
                 <Checkbox
                   name="trellis_multipass"
                   checked={options.trellis_multipass}
@@ -263,7 +263,7 @@ export class Options extends Component<Props, State> {
               <Expander>
                 {options.trellis_multipass ? (
                   <label class={style.optionToggle}>
-                    Optimize zero block runs
+                    优化零块连续段
                     <Checkbox
                       name="trellis_opt_zero"
                       checked={options.trellis_opt_zero}
@@ -273,7 +273,7 @@ export class Options extends Component<Props, State> {
                 ) : null}
               </Expander>
               <label class={style.optionToggle}>
-                Optimize after trellis quantization
+                Trellis 量化后优化
                 <Checkbox
                   name="trellis_opt_table"
                   checked={options.trellis_opt_table}
@@ -288,7 +288,7 @@ export class Options extends Component<Props, State> {
                   value={options.trellis_loops}
                   onInput={this.onChange}
                 >
-                  Trellis quantization passes:
+                  Trellis 量化轮数：
                 </Range>
               </div>
             </div>

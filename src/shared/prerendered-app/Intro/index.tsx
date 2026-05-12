@@ -23,28 +23,28 @@ import SlideOnScroll from './SlideOnScroll';
 
 const demos = [
   {
-    description: 'Large photo',
+    description: '大尺寸照片',
     size: '2.8MB',
     filename: 'photo.jpg',
     url: largePhoto,
     iconUrl: largePhotoIcon,
   },
   {
-    description: 'Artwork',
+    description: '插画作品',
     size: '2.9MB',
     filename: 'art.jpg',
     url: artwork,
     iconUrl: artworkIcon,
   },
   {
-    description: 'Device screen',
+    description: '设备截图',
     size: '1.6MB',
     filename: 'pixel3.png',
     url: deviceScreen,
     iconUrl: deviceScreenIcon,
   },
   {
-    description: 'SVG icon',
+    description: 'SVG 图标',
     size: '13KB',
     filename: 'squoosh.svg',
     url: logo,
@@ -56,7 +56,6 @@ const blobAnimImport =
   !__PRERENDER__ && matchMedia('(prefers-reduced-motion: reduce)').matches
     ? undefined
     : import('./blob-anim');
-const installButtonSource = 'introInstallButton-Purple';
 const supportsClipboardAPI =
   !__PRERENDER__ && navigator.clipboard && navigator.clipboard.read;
 
@@ -69,13 +68,44 @@ async function getImageClipboardItem(
   }
 }
 
+function isImageFile(file: File): boolean {
+  return (
+    file.type.startsWith('image/') ||
+    /\.(avif|gif|jpe?g|jxl|png|qoi|svg|webp)$/i.test(file.name)
+  );
+}
+
+async function collectDirectoryFiles(
+  directoryHandle: any,
+  directoryPath = directoryHandle.name,
+): Promise<File[]> {
+  const files: File[] = [];
+
+  for await (const [name, handle] of directoryHandle.entries()) {
+    const path = `${directoryPath}/${name}`;
+    if (handle.kind === 'directory') {
+      files.push(...(await collectDirectoryFiles(handle, path)));
+      continue;
+    }
+
+    const file = await handle.getFile();
+    if (!isImageFile(file)) continue;
+    Object.defineProperty(file, 'webkitRelativePath', {
+      configurable: true,
+      value: path,
+    });
+    files.push(file);
+  }
+
+  return files;
+}
+
 interface Props {
-  onFile?: (file: File) => void;
+  onFiles?: (files: File[]) => void;
   showSnack?: SnackBarElement['showSnackbar'];
 }
 interface State {
   fetchingDemoIndex?: number;
-  beforeInstallEvent?: BeforeInstallPromptEvent;
   showBlobSVG: boolean;
 }
 
@@ -84,19 +114,10 @@ export default class Intro extends Component<Props, State> {
     showBlobSVG: true,
   };
   private fileInput?: HTMLInputElement;
+  private directoryInput?: HTMLInputElement;
   private blobCanvas?: HTMLCanvasElement;
-  private installingViaButton = false;
 
   componentDidMount() {
-    // Listen for beforeinstallprompt events, indicating Squoosh is installable.
-    window.addEventListener(
-      'beforeinstallprompt',
-      this.onBeforeInstallPromptEvent,
-    );
-
-    // Listen for the appinstalled event, indicating Squoosh has been installed.
-    window.addEventListener('appinstalled', this.onAppInstalled);
-
     if (blobAnimImport) {
       blobAnimImport.then((module) => {
         this.setState(
@@ -109,24 +130,42 @@ export default class Intro extends Component<Props, State> {
     }
   }
 
-  componentWillUnmount() {
-    window.removeEventListener(
-      'beforeinstallprompt',
-      this.onBeforeInstallPromptEvent,
-    );
-    window.removeEventListener('appinstalled', this.onAppInstalled);
-  }
-
   private onFileChange = (event: Event): void => {
     const fileInput = event.target as HTMLInputElement;
-    const file = fileInput.files && fileInput.files[0];
-    if (!file) return;
-    this.fileInput!.value = '';
-    this.props.onFile!(file);
+    const files = fileInput.files ? Array.from(fileInput.files) : [];
+    if (files.length === 0) return;
+    fileInput.value = '';
+    this.props.onFiles!(files);
   };
 
   private onOpenClick = () => {
     this.fileInput!.click();
+  };
+
+  private onOpenDirectoryClick = () => {
+    this.openDirectory();
+  };
+
+  private openDirectory = async () => {
+    const picker = (window as any).showDirectoryPicker;
+    if (!picker) {
+      this.directoryInput!.setAttribute('webkitdirectory', '');
+      this.directoryInput!.click();
+      return;
+    }
+
+    try {
+      const directoryHandle = await picker.call(window);
+      const files = await collectDirectoryFiles(directoryHandle);
+      if (files.length === 0) {
+        await this.props.showSnack!('目录中没有可处理的图片');
+        return;
+      }
+      this.props.onFiles!(files);
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
+      await this.props.showSnack!('目录读取失败');
+    }
   };
 
   private onDemoClick = async (index: number, event: Event) => {
@@ -135,70 +174,11 @@ export default class Intro extends Component<Props, State> {
       const demo = demos[index];
       const blob = await fetch(demo.url).then((r) => r.blob());
       const file = new File([blob], demo.filename, { type: blob.type });
-      this.props.onFile!(file);
+      this.props.onFiles!([file]);
     } catch (err) {
       this.setState({ fetchingDemoIndex: undefined });
-      this.props.showSnack!("Couldn't fetch demo image");
+      this.props.showSnack!('演示图片加载失败');
     }
-  };
-
-  private onBeforeInstallPromptEvent = (event: BeforeInstallPromptEvent) => {
-    // Don't show the mini-infobar on mobile
-    event.preventDefault();
-
-    // Save the beforeinstallprompt event so it can be called later.
-    this.setState({ beforeInstallEvent: event });
-
-    // Log the event.
-    const gaEventInfo = {
-      eventCategory: 'pwa-install',
-      eventAction: 'promo-shown',
-      nonInteraction: true,
-    };
-    ga('send', 'event', gaEventInfo);
-  };
-
-  private onInstallClick = async (event: Event) => {
-    // Get the deferred beforeinstallprompt event
-    const beforeInstallEvent = this.state.beforeInstallEvent;
-    // If there's no deferred prompt, bail.
-    if (!beforeInstallEvent) return;
-
-    this.installingViaButton = true;
-
-    // Show the browser install prompt
-    beforeInstallEvent.prompt();
-
-    // Wait for the user to accept or dismiss the install prompt
-    const { outcome } = await beforeInstallEvent.userChoice;
-    // Send the analytics data
-    const gaEventInfo = {
-      eventCategory: 'pwa-install',
-      eventAction: 'promo-clicked',
-      eventLabel: installButtonSource,
-      eventValue: outcome === 'accepted' ? 1 : 0,
-    };
-    ga('send', 'event', gaEventInfo);
-
-    // If the prompt was dismissed, we aren't going to install via the button.
-    if (outcome === 'dismissed') {
-      this.installingViaButton = false;
-    }
-  };
-
-  private onAppInstalled = () => {
-    // We don't need the install button, if it's shown
-    this.setState({ beforeInstallEvent: undefined });
-
-    // Don't log analytics if page is not visible
-    if (document.hidden) return;
-
-    // Try to get the install, if it's not set, use 'browser'
-    const source = this.installingViaButton ? installButtonSource : 'browser';
-    ga('send', 'event', 'pwa-install', 'installed', source);
-
-    // Clear the install method property
-    this.installingViaButton = false;
   };
 
   private onPasteClick = async () => {
@@ -207,30 +187,38 @@ export default class Intro extends Component<Props, State> {
     try {
       clipboardItems = await navigator.clipboard.read();
     } catch (err) {
-      this.props.showSnack!(`No permission to access clipboard`);
+      this.props.showSnack!('没有访问剪贴板的权限');
       return;
     }
 
     const blob = await getImageClipboardItem(clipboardItems);
 
     if (!blob) {
-      this.props.showSnack!(`No image found in the clipboard`);
+      this.props.showSnack!('剪贴板中没有图片');
       return;
     }
 
-    this.props.onFile!(new File([blob], 'image.unknown'));
+    this.props.onFiles!([new File([blob], 'image.unknown')]);
   };
 
-  render(
-    {}: Props,
-    { fetchingDemoIndex, beforeInstallEvent, showBlobSVG }: State,
-  ) {
+  render({}: Props, { fetchingDemoIndex, showBlobSVG }: State) {
     return (
       <div class={style.intro}>
         <input
           class={style.hide}
           ref={linkRef(this, 'fileInput')}
           type="file"
+          accept="image/*"
+          multiple
+          onChange={this.onFileChange}
+        />
+        <input
+          class={style.hide}
+          ref={linkRef(this, 'directoryInput')}
+          type="file"
+          accept="image/*"
+          multiple
+          {...({ webkitdirectory: '' } as any)}
           onChange={this.onFileChange}
         />
         <div class={style.main}>
@@ -285,15 +273,21 @@ export default class Intro extends Component<Props, State> {
                 </svg>
               </button>
               <div>
-                <span class={style.dropText}>Drop </span>OR{' '}
+                <span class={style.dropText}>拖入图片 </span>或{' '}
                 {supportsClipboardAPI ? (
                   <button class={style.pasteBtn} onClick={this.onPasteClick}>
-                    Paste
+                    粘贴
                   </button>
                 ) : (
-                  'Paste'
+                  '粘贴'
                 )}
               </div>
+              <button
+                class={style.directoryBtn}
+                onClick={this.onOpenDirectoryClick}
+              >
+                选择目录
+              </button>
             </div>
           </div>
         </div>
@@ -310,7 +304,7 @@ export default class Intro extends Component<Props, State> {
           </svg>
           <div class={style.contentPadding}>
             <p class={style.demoTitle}>
-              Or <strong>try one</strong> of these:
+              或<strong>试试</strong>这些示例：
             </p>
             <ul class={style.demos}>
               {demos.map((demo, i) => (
@@ -355,17 +349,17 @@ export default class Intro extends Component<Props, State> {
             <SlideOnScroll>
               <div class={style.infoContent}>
                 <div class={style.infoTextWrapper}>
-                  <h2 class={style.infoTitle}>Small</h2>
+                  <h2 class={style.infoTitle}>更小</h2>
                   <p class={style.infoCaption}>
-                    Smaller images mean faster load times. Squoosh can reduce
-                    file size and maintain high quality.
+                    更小的图片意味着更快的加载速度。Squoosh
+                    可以在保持高质量的同时减小文件体积。
                   </p>
                 </div>
                 <div class={style.infoImgWrapper}>
                   <img
                     class={style.infoImg}
                     src={smallSectionAsset}
-                    alt="silhouette of a large 1.4 megabyte image shrunk into a smaller 80 kilobyte image"
+                    alt="一张 1.4 MB 的大图缩小为 80 KB 小图的示意图"
                     width="536"
                     height="522"
                   />
@@ -380,18 +374,16 @@ export default class Intro extends Component<Props, State> {
             <SlideOnScroll>
               <div class={style.infoContent}>
                 <div class={style.infoTextWrapper}>
-                  <h2 class={style.infoTitle}>Simple</h2>
+                  <h2 class={style.infoTitle}>简单</h2>
                   <p class={style.infoCaption}>
-                    Open your image, inspect the differences, then save
-                    instantly. Feeling adventurous? Adjust the settings for even
-                    smaller files.
+                    打开图片、查看差异，然后立即保存。想继续压缩，也可以调整设置获得更小文件。
                   </p>
                 </div>
                 <div class={style.infoImgWrapper}>
                   <img
                     class={style.infoImg}
                     src={simpleSectionAsset}
-                    alt="grid of multiple shrunk images displaying various options"
+                    alt="多张缩小图片和不同设置选项的网格示意图"
                     width="538"
                     height="384"
                   />
@@ -406,17 +398,17 @@ export default class Intro extends Component<Props, State> {
             <SlideOnScroll>
               <div class={style.infoContent}>
                 <div class={style.infoTextWrapper}>
-                  <h2 class={style.infoTitle}>Secure</h2>
+                  <h2 class={style.infoTitle}>安全</h2>
                   <p class={style.infoCaption}>
-                    Worried about privacy? Images never leave your device since
-                    Squoosh does all the work locally.
+                    担心隐私？图片不会离开你的设备，Squoosh
+                    会在本地完成所有处理。
                   </p>
                 </div>
                 <div class={style.infoImgWrapper}>
                   <img
                     class={style.infoImg}
                     src={secureSectionAsset}
-                    alt="silhouette of a cloud with a 'no' symbol on top"
+                    alt="带有禁止标识的云朵示意图"
                     width="498"
                     height="333"
                   />
@@ -440,24 +432,19 @@ export default class Intro extends Component<Props, State> {
                   class={style.footerLink}
                   href="https://github.com/GoogleChromeLabs/squoosh/blob/dev/README.md#privacy"
                 >
-                  Privacy
+                  隐私
                 </a>
                 <a
                   class={style.footerLinkWithLogo}
                   href="https://github.com/GoogleChromeLabs/squoosh"
                 >
                   <img src={githubLogo} alt="" width="10" height="10" />
-                  Source on Github
+                  GitHub 源码
                 </a>
               </footer>
             </div>
           </div>
         </footer>
-        {beforeInstallEvent && (
-          <button class={style.installBtn} onClick={this.onInstallClick}>
-            Install
-          </button>
-        )}
       </div>
     );
   }

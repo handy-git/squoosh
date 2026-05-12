@@ -21,10 +21,6 @@
   border-bottom: 1px solid var(--off-black);
   transition: all 300ms ease-in-out;
   transition-property: background-color, color;
-
-  position: sticky;
-  top: 0;
-  z-index: 1;
 }
 
 .original-image .options-title {
@@ -91,68 +87,4 @@
   width: 100%;
   box-sizing: border-box;
   border-radius: 4px;
-}
-
-.title-and-buttons {
-  grid-template-columns: 1fr;
-  grid-auto-columns: max-content;
-  grid-auto-flow: column;
-  display: grid;
-  gap: 0.8rem;
-}
-
-.title-button {
-  composes: unbutton from global;
-  svg {
-    --size: 20px;
-    display: block;
-    width: var(--size);
-    height: var(--size);
-  }
-}
-
-.cli-button {
-  composes: title-button;
-
-  svg {
-    stroke: var(--header-text-color);
-  }
-}
-
-.copy-over-button {
-  composes: title-button;
-
-  /* Make the filled arrow point towards the other options element */
-  transform: rotate(var(--rotate-copyoverbutton-angle));
-
-  svg {
-    fill: var(--header-text-color);
-  }
-
-  &:focus {
-    outline: var(--header-text-color) solid 2px;
-    outline-offset: 0.25em;
-  }
-}
-
-.save-button,
-.import-button {
-  composes: title-button;
-
-  svg {
-    stroke: var(--header-text-color);
-  }
-
-  &:focus {
-    outline: var(--header-text-color) solid 2px;
-    outline-offset: 0.25em;
-  }
-}
-
-.button-opacity {
-  pointer-events: none;
-  cursor: not-allowed;
-  svg {
-    opacity: 0.5;
-  }
 }

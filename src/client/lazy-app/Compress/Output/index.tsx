@@ -365,7 +365,7 @@ export default class Output extends Component<Props, State> {
             <button
               class={style.firstButton}
               onClick={this.onRotateClick}
-              title="Rotate"
+              title="旋转"
             >
               <RotateIcon />
             </button>
@@ -373,7 +373,7 @@ export default class Output extends Component<Props, State> {
               <button
                 class={style.button}
                 onClick={this.toggleAliasing}
-                title="Toggle smoothing"
+                title="切换平滑"
               >
                 {aliasing ? (
                   <ToggleAliasingActiveIcon />
@@ -385,7 +385,7 @@ export default class Output extends Component<Props, State> {
             <button
               class={style.lastButton}
               onClick={this.toggleBackground}
-              title="Toggle background"
+              title="切换背景"
             >
               {altBackground ? (
                 <ToggleBackgroundActiveIcon />

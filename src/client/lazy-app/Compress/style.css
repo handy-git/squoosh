@@ -3,29 +3,206 @@
   height: 100%;
   contain: strict;
   display: grid;
-  grid-template-rows: max-content 1fr;
+  overflow: hidden;
+  background: var(--off-black);
+  grid-template-rows: 190px minmax(0, 1fr);
   grid-template-areas:
-    'header'
+    'tree'
     'opts';
 
   --options-radius: 7px;
 
   @media (min-width: 600px) {
-    grid-template-rows: max-content 1fr;
-    grid-template-columns: max-content 1fr max-content;
-    grid-template-areas:
-      'header header header'
-      'optsLeft viewportOpts optsRight';
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-columns: minmax(260px, 320px) minmax(0, 1fr) minmax(
+        300px,
+        360px
+      );
+    grid-template-areas: 'tree viewportOpts optsRight';
   }
+}
+
+.batch-panel {
+  grid-area: tree;
+  align-self: stretch;
+  justify-self: stretch;
+  z-index: 1;
+  box-sizing: border-box;
+  height: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  min-height: 0;
+  overflow: hidden;
+  border-right: 1px solid var(--black);
+  background: var(--off-black);
+  color: var(--white);
+  font-size: 1.2rem;
+  --main-theme-color: var(--blue);
+  --hot-theme-color: var(--deep-blue);
+  --header-text-color: var(--dark-text);
+
+  @media (max-width: 599px) {
+    height: 100%;
+    max-height: 100%;
+    border-right: 0;
+    border-bottom: 1px solid var(--black);
+  }
+}
+
+.hidden-input {
+  display: none;
+}
+
+.batch-panel-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  gap: 8px;
+  align-items: center;
+  flex: 0 0 auto;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--black);
+  background: var(--main-theme-color);
+  color: var(--header-text-color);
+}
+
+.batch-count {
+  margin-left: 6px;
+  color: var(--off-black);
+  font-weight: bold;
+}
+
+.batch-download {
+  composes: unbutton from global;
+  border-radius: 4px;
+  background: var(--off-black);
+  color: var(--white);
+  font: inherit;
+  font-weight: bold;
+  padding: 0.45em 0.7em;
+
+  &:disabled {
+    color: rgba(255, 255, 255, 0.45);
+    background: rgba(0, 0, 0, 0.32);
+  }
+}
+
+.batch-upload-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  flex: 0 0 auto;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--black);
+}
+
+.batch-secondary-button {
+  composes: unbutton from global;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 4px;
+  background: var(--dark-gray);
+  color: var(--white);
+  font: inherit;
+  padding: 0.45em 0.7em;
+
+  &:hover,
+  &:focus {
+    background: rgba(255, 255, 255, 0.14);
+  }
+}
+
+.batch-settings {
+  flex: 0 0 auto;
+  padding: 10px 12px 0;
+  color: rgba(255, 255, 255, 0.7);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.batch-select-all {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  padding: 8px 12px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.batch-progress {
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.7);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.batch-tree {
+  overflow-x: hidden;
+  overflow-y: auto;
+  flex: 1 1 0;
+  height: 0;
+  min-height: 0;
+  display: block;
+  padding: 6px;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.batch-tree-row {
+  display: grid;
+  grid-template-columns: max-content 1.2em minmax(0, 1fr) max-content;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  box-sizing: border-box;
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.86);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+.batch-tree-row-active {
+  background: rgba(45, 211, 255, 0.18);
+  color: var(--white);
+}
+
+.batch-tree-name {
+  composes: unbutton from global;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.batch-tree-toggle {
+  composes: unbutton from global;
+  width: 1.2em;
+  color: rgba(255, 255, 255, 0.62);
+  font: inherit;
+  text-align: center;
+}
+
+.batch-tree-size {
+  justify-self: end;
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 0.92em;
+  white-space: nowrap;
 }
 
 .options {
   position: relative;
   color: #fff;
+  background: var(--off-black);
   font-size: 1.2rem;
-  max-width: 400px;
-  margin: 0 auto;
-  width: calc(100% - 60px);
+  width: 100%;
   max-height: 100%;
   overflow: hidden;
   grid-area: opts;
@@ -35,7 +212,7 @@
   align-self: end;
 
   @media (min-width: 600px) {
-    width: 300px;
+    width: 100%;
     margin: 0;
   }
 }
@@ -45,11 +222,9 @@
   --hot-theme-color: var(--hot-pink);
   --header-text-color: var(--white);
   --scroller-radius: var(--options-radius) var(--options-radius) 0 0;
-  --rotate-copyoverbutton-angle: 90deg; /* To point down */
 
   @media (min-width: 600px) {
     --scroller-radius: 0 var(--options-radius) var(--options-radius) 0;
-    --rotate-copyoverbutton-angle: 0deg; /* To point right (no change) */
   }
 }
 
@@ -58,18 +233,16 @@
   --hot-theme-color: var(--deep-blue);
   --header-text-color: var(--dark-text);
   --scroller-radius: var(--options-radius) var(--options-radius) 0 0;
-  --rotate-copyoverbutton-angle: -90deg; /* To point up */
 
   @media (min-width: 600px) {
     --scroller-radius: var(--options-radius) 0 0 var(--options-radius);
-    --rotate-copyoverbutton-angle: 180deg; /* To point left */
   }
 }
 
 .options-1 {
   composes: options;
   composes: options-1-theme;
-  grid-area: optsLeft;
+  display: none;
 }
 
 .options-2 {
@@ -105,11 +278,11 @@
 
 .back {
   composes: unbutton from global;
-  position: relative;
-  grid-area: header;
-  margin: 9px;
-  justify-self: start;
-  align-self: start;
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  z-index: 3;
+  margin: 0;
 
   & > svg {
     width: 47px;
