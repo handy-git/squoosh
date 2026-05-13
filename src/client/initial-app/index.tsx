@@ -11,6 +11,7 @@
  * limitations under the License.
  */
 import { h, render } from 'preact';
+import Clarity from '@microsoft/clarity';
 import App from './App';
 
 const root = document.getElementById('app') as HTMLElement;
@@ -37,6 +38,7 @@ main();
   ga('set', 'transport', 'beacon');
   ga('set', 'dimension1', displayMode);
   ga('send', 'pageview', '/index.html', { title: 'RicePic' });
+  Clarity.init('wq8ise2q50');
   // Load the GA script without keeping the browser spinner going.
   addEventListener('load', () => {
     const script = document.createElement('script');
