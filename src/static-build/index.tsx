@@ -12,7 +12,7 @@
  */
 import { h } from 'preact';
 
-import { renderPage, writeFiles } from './utils';
+import { renderPage, siteOrigin, writeFiles } from './utils';
 import IndexPage from './pages/index';
 import * as iconLargeMaskable from 'img-url:static-build/assets/icon-large-maskable.png';
 import * as iconLarge from 'img-url:static-build/assets/icon-large.png';
@@ -54,6 +54,22 @@ interface Output {
 
 const toOutput: Output = {
   'index.html': renderPage(<IndexPage />),
+  'robots.txt':
+    dedent`
+      User-agent: *
+      Allow: /
+
+      Sitemap: ${siteOrigin}/sitemap.xml
+    `.trim() + '\n',
+  'sitemap.xml':
+    dedent`
+      <?xml version="1.0" encoding="UTF-8"?>
+      <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+        <url>
+          <loc>${siteOrigin}</loc>
+        </url>
+      </urlset>
+    `.trim() + '\n',
   'manifest.json': JSON.stringify({
     name: 'RicePic',
     short_name: 'RicePic',

@@ -1,38 +1,27 @@
-# [Squoosh]!
+# RicePic
 
-[Squoosh] is an image compression web app that reduces image sizes through numerous formats.
+RicePic 是一个在线图片压缩与格式转换工具，可以在浏览器中压缩图片、对比效果，并尝试不同编码器。
 
-# Privacy
+# 隐私
 
-Squoosh does not send your image to a server. All image compression processes locally.
+RicePic 不会把你的图片发送到服务器。图片压缩和处理都在本地浏览器中完成。
 
-However, Squoosh utilizes Google Analytics to collect the following:
+RicePic 会使用统计脚本收集基础访问数据，用于了解站点使用情况。
 
-- [Basic visitor data](https://support.google.com/analytics/answer/6004245?ref_topic=2919631).
-- The before and after image size value.
-- If Squoosh PWA, the type of Squoosh installation.
-- If Squoosh PWA, the installation time and date.
+# 开发
 
-# Developing
+开发 RicePic：
 
-To develop for Squoosh:
-
-1. Clone the repository
-1. To install node packages, run:
+1. 克隆仓库
+2. 安装依赖：
    ```sh
-   npm install
+   pnpm install
    ```
-1. Then build the app by running:
+3. 构建应用：
    ```sh
-   npm run build
+   pnpm run build
    ```
-1. After building, start the development server by running:
+4. 启动开发服务：
    ```sh
-   npm run dev
+   pnpm run dev
    ```
-
-# Contributing
-
-Squoosh is an open-source project that appreciates all community involvement. To contribute to the project, follow the [contribute guide](/CONTRIBUTING.md).
-
-[squoosh]: https://squoosh.app

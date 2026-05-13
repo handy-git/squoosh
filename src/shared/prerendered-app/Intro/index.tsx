@@ -378,6 +378,10 @@ export default class Intro extends Component<Props, State> {
                   <p class={style.infoCaption}>
                     打开图片、查看差异，然后立即保存。想继续压缩，也可以调整设置获得更小文件。
                   </p>
+                  <p class={style.infoCaption}>
+                    支持 JPEG、PNG、WebP、AVIF
+                    等常见格式，也可以批量处理图片，适合在发布到网页前快速优化体积。
+                  </p>
                 </div>
                 <div class={style.infoImgWrapper}>
                   <img

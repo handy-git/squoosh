@@ -24,19 +24,24 @@ import * as snackbarStyle from '../../../shared/custom-els/snack-bar/styles.css'
 
 interface Props {}
 
+const pageTitle = 'RicePic - 在线图片压缩与格式转换工具';
+const pageDescription =
+  'RicePic 是一款在浏览器中压缩、比较图片并尝试不同编码器的图片优化工具。';
+
 const Index: FunctionalComponent<Props> = () => (
   <html lang="zh-CN">
     <head>
       <meta charSet="utf-8" />
-      <title>RicePic</title>
-      <meta
-        name="description"
-        content="RicePic 是一款在浏览器中压缩、比较图片并尝试不同编码器的图片优化工具。"
-      />
+      <title>{pageTitle}</title>
+      <meta name="description" content={pageDescription} />
       <meta name="twitter:card" content="summary" />
       <meta name="twitter:site" content="@RicePic" />
-      <meta property="og:title" content="RicePic" />
+      <meta name="twitter:title" content={pageTitle} />
+      <meta name="twitter:description" content={pageDescription} />
+      <meta name="twitter:image" content={`${siteOrigin}${ogImage}`} />
+      <meta property="og:title" content={pageTitle} />
       <meta property="og:type" content="website" />
+      <meta property="og:url" content={siteOrigin} />
       <meta property="og:image" content={`${siteOrigin}${ogImage}`} />
       <meta
         property="og:image:secure_url"
@@ -49,10 +54,7 @@ const Index: FunctionalComponent<Props> = () => (
         property="og:image:alt"
         content="深色背景中一只手挤压图片文件的卡通图。"
       />
-      <meta
-        name="og:description"
-        content="RicePic 是一款在浏览器中压缩、比较图片并尝试不同编码器的图片优化工具。"
-      />
+      <meta property="og:description" content={pageDescription} />
       <meta
         name="viewport"
         content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
