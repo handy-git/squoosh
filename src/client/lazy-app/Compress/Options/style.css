@@ -67,6 +67,37 @@
   padding: 10px var(--horizontal-padding);
 }
 
+.encoder-select-row {
+  padding: 10px var(--horizontal-padding);
+}
+
+.encoder-select-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.encoder-info {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--dark-gray);
+  color: var(--white);
+  cursor: help;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.encoder-info:focus,
+.encoder-info:hover {
+  background: var(--main-theme-color);
+  color: var(--header-text-color);
+  outline: none;
+}
+
 .section-enabler {
   composes: option-toggle;
   background: var(--dark-gray);

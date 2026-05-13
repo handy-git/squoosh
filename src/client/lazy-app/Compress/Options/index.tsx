@@ -37,6 +37,56 @@ type PartialButNotUndefined<T> = {
   [P in keyof T]: T[P];
 };
 
+const encoderDescriptions: {
+  [P in keyof typeof encoderMap]: { feature: string; suitableFor: string };
+} = {
+  avif: {
+    feature: '压缩率极高，体积最小，画质优秀，支持透明/HDR',
+    suitableFor: '网站、移动端、现代 Web',
+  },
+  browserJPEG: {
+    feature: '浏览器兼容优化版 JPEG',
+    suitableFor: '普通照片',
+  },
+  browserGIF: {
+    feature: '浏览器兼容导出 GIF，可能只保留静态帧',
+    suitableFor: '简单 GIF、兼容兜底',
+  },
+  browserPNG: {
+    feature: '浏览器兼容优化版 PNG',
+    suitableFor: 'UI、Logo、透明图',
+  },
+  jxl: {
+    feature: '新一代 JPEG，画质和压缩都强，但兼容性差',
+    suitableFor: '未来格式、实验',
+  },
+  mozJPEG: {
+    feature: 'JPEG 的高压缩优化版，体积更小',
+    suitableFor: '网站照片',
+  },
+  oxiPNG: {
+    feature: 'PNG 无损极限压缩',
+    suitableFor: '图标、透明素材',
+  },
+  qoi: {
+    feature: '“Quite OK Image”，超快编码解码，但压缩一般',
+    suitableFor: '游戏/实时加载',
+  },
+  webP: {
+    feature: 'Google 推广格式，兼顾体积和兼容',
+    suitableFor: '网站通用首选',
+  },
+  wp2: {
+    feature: 'WebP 下一代实验版',
+    suitableFor: '不建议生产用',
+  },
+};
+
+function encoderDescriptionTitle(type: keyof typeof encoderMap): string {
+  const description = encoderDescriptions[type];
+  return `${encoderMap[type].meta.label}：${description.feature}。适合：${description.suitableFor}`;
+}
+
 const supportedEncoderMapP: Promise<PartialButNotUndefined<typeof encoderMap>> =
   (async () => {
     const supportedEncoderMap: PartialButNotUndefined<typeof encoderMap> = {
@@ -111,6 +161,9 @@ export default class Options extends Component<Props, State> {
     const encoder = encoderState && encoderMap[encoderState.type];
     const EncoderOptionComponent =
       encoder && 'Options' in encoder ? encoder.Options : undefined;
+    const encoderInfoTitle = encoderState
+      ? encoderDescriptionTitle(encoderState.type)
+      : '保留原始文件，不重新编码';
 
     return (
       <div
@@ -166,20 +219,35 @@ export default class Options extends Component<Props, State> {
 
         <h3 class={style.optionsTitle}>压缩</h3>
 
-        <section class={`${style.optionOneCell} ${style.optionsSection}`}>
+        <section class={`${style.encoderSelectRow} ${style.optionsSection}`}>
           {supportedEncoderMap ? (
-            <Select
-              value={encoderState ? encoderState.type : 'identity'}
-              onChange={this.onEncoderTypeChange}
-              large
-            >
-              <option value="identity">{`原图 ${
-                this.props.source ? `(${this.props.source.file.name})` : ''
-              }`}</option>
-              {Object.entries(supportedEncoderMap).map(([type, encoder]) => (
-                <option value={type}>{encoder.meta.label}</option>
-              ))}
-            </Select>
+            <div class={style.encoderSelectControl}>
+              <Select
+                value={encoderState ? encoderState.type : 'identity'}
+                onChange={this.onEncoderTypeChange}
+                large
+              >
+                <option value="identity" title={encoderInfoTitle}>{`原图 ${
+                  this.props.source ? `(${this.props.source.file.name})` : ''
+                }`}</option>
+                {Object.entries(supportedEncoderMap).map(([type, encoder]) => (
+                  <option
+                    value={type}
+                    title={encoderDescriptionTitle(
+                      type as keyof typeof encoderMap,
+                    )}
+                  >{`${encoder.meta.label} ⓘ`}</option>
+                ))}
+              </Select>
+              <span
+                class={style.encoderInfo}
+                title={encoderInfoTitle}
+                aria-label={encoderInfoTitle}
+                tabIndex={0}
+              >
+                ⓘ
+              </span>
+            </div>
           ) : (
             <Select large>
               <option>加载中…</option>

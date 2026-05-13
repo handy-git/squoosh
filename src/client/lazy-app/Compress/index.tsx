@@ -136,6 +136,34 @@ function isImageFile(file: File): boolean {
   );
 }
 
+function defaultEncoderTypeForFile(file: File): EncoderType {
+  const mimeType = file.type.toLowerCase();
+  const filename = file.name.toLowerCase();
+
+  if (mimeType === 'image/gif' || /\.gif$/i.test(filename)) {
+    return 'browserGIF';
+  }
+  if (mimeType === 'image/png' || /\.png$/i.test(filename)) return 'oxiPNG';
+  if (mimeType === 'image/jpeg' || /\.jpe?g$/i.test(filename)) {
+    return 'mozJPEG';
+  }
+  if (mimeType === 'image/webp' || /\.webp$/i.test(filename)) return 'webP';
+  if (mimeType === 'image/avif' || /\.avif$/i.test(filename)) return 'avif';
+  if (mimeType === 'image/jxl' || /\.jxl$/i.test(filename)) return 'jxl';
+  if (mimeType === 'image/webp2' || /\.wp2$/i.test(filename)) return 'wp2';
+  if (mimeType === 'image/qoi' || /\.qoi$/i.test(filename)) return 'qoi';
+
+  return 'webP';
+}
+
+function defaultEncoderStateForFile(file: File): EncoderState {
+  const type = defaultEncoderTypeForFile(file);
+  return {
+    type,
+    options: encoderMap[type].meta.defaultOptions,
+  } as EncoderState;
+}
+
 async function collectDirectoryFiles(
   directoryHandle: any,
   directoryPath = directoryHandle.name,
@@ -546,10 +574,7 @@ export default class Compress extends Component<Props, State> {
       {
         latestSettings: {
           processorState: defaultProcessorState,
-          encoderState: {
-            type: 'webP',
-            options: encoderMap.webP.meta.defaultOptions,
-          },
+          encoderState: defaultEncoderStateForFile(this.props.file),
         },
         loading: false,
       },
@@ -635,6 +660,13 @@ export default class Compress extends Component<Props, State> {
     }
     if (nextProps.file !== this.props.file) {
       this.sourceFile = nextProps.file;
+      this.setState({
+        sides: cleanSet(
+          this.state.sides,
+          '1.latestSettings.encoderState',
+          defaultEncoderStateForFile(nextProps.file),
+        ),
+      });
       this.queueUpdateImage({ immediate: true });
     }
   }
