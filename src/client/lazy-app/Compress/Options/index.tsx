@@ -10,11 +10,11 @@ import {
   EncoderState,
   ProcessorState,
   ProcessorOptions,
+  EncoderType,
   encoderMap,
 } from '../../feature-meta';
 import Expander from './Expander';
 import Toggle from './Toggle';
-import Select from './Select';
 import { Options as QuantOptionsComponent } from 'features/processors/quantize/client';
 import { Options as ResizeOptionsComponent } from 'features/processors/resize/client';
 
@@ -38,53 +38,36 @@ type PartialButNotUndefined<T> = {
 };
 
 const encoderDescriptions: {
-  [P in keyof typeof encoderMap]: { feature: string; suitableFor: string };
+  [P in keyof typeof encoderMap]: string;
 } = {
-  avif: {
-    feature: '压缩率极高，体积最小，画质优秀，支持透明/HDR',
-    suitableFor: '网站、移动端、现代 Web',
-  },
-  browserJPEG: {
-    feature: '浏览器兼容优化版 JPEG',
-    suitableFor: '普通照片',
-  },
-  browserGIF: {
-    feature: '浏览器兼容导出 GIF，可能只保留静态帧',
-    suitableFor: '简单 GIF、兼容兜底',
-  },
-  browserPNG: {
-    feature: '浏览器兼容优化版 PNG',
-    suitableFor: 'UI、Logo、透明图',
-  },
-  jxl: {
-    feature: '新一代 JPEG，画质和压缩都强，但兼容性差',
-    suitableFor: '未来格式、实验',
-  },
-  mozJPEG: {
-    feature: 'JPEG 的高压缩优化版，体积更小',
-    suitableFor: '网站照片',
-  },
-  oxiPNG: {
-    feature: 'PNG 无损极限压缩',
-    suitableFor: '图标、透明素材',
-  },
-  qoi: {
-    feature: '“Quite OK Image”，超快编码解码，但压缩一般',
-    suitableFor: '游戏/实时加载',
-  },
-  webP: {
-    feature: 'Google 推广格式，兼顾体积和兼容',
-    suitableFor: '网站通用首选',
-  },
-  wp2: {
-    feature: 'WebP 下一代实验版',
-    suitableFor: '不建议生产用',
-  },
+  avif: '超高压缩 · 移动网页',
+  browserJPEG: '标准有损 · 照片分享',
+  browserGIF: '动图兼容 · 表情动画',
+  browserPNG: '无损透明 · 图标素材',
+  jxl: '高压缩 · 实验格式',
+  mozJPEG: '极限压缩 · 网页照片',
+  oxiPNG: '无损瘦身 · UI透明图',
+  qoi: '极速编解 · 游戏缓存',
+  webP: '均衡压缩 · 网站通用',
+  wp2: '实验新版 · 不建议生产',
 };
 
-function encoderDescriptionTitle(type: keyof typeof encoderMap): string {
-  const description = encoderDescriptions[type];
-  return `${encoderMap[type].meta.label}：${description.feature}。适合：${description.suitableFor}`;
+const hiddenEncoderTypes = new Set<EncoderType>(['jxl', 'wp2']);
+
+function sortedEncoderEntries(
+  supportedEncoderMap: PartialButNotUndefined<typeof encoderMap>,
+) {
+  const entries = Object.entries(supportedEncoderMap);
+  const webPIndex = entries.findIndex(([type]) => type === 'webP');
+  const avifIndex = entries.findIndex(([type]) => type === 'avif');
+
+  if (webPIndex !== -1 && avifIndex !== -1) {
+    const webPEntry = entries[webPIndex];
+    entries[webPIndex] = entries[avifIndex];
+    entries[avifIndex] = webPEntry;
+  }
+
+  return entries;
 }
 
 const supportedEncoderMapP: Promise<PartialButNotUndefined<typeof encoderMap>> =
@@ -96,8 +79,12 @@ const supportedEncoderMapP: Promise<PartialButNotUndefined<typeof encoderMap>> =
     // Filter out entries where the feature test fails
     await Promise.all(
       Object.entries(encoderMap).map(async ([encoderName, details]) => {
-        if ('featureTest' in details && !(await details.featureTest())) {
-          delete supportedEncoderMap[encoderName as keyof typeof encoderMap];
+        const encoderType = encoderName as keyof typeof encoderMap;
+        if (
+          hiddenEncoderTypes.has(encoderType) ||
+          ('featureTest' in details && !(await details.featureTest()))
+        ) {
+          delete supportedEncoderMap[encoderType];
         }
       }),
     );
@@ -117,12 +104,7 @@ export default class Options extends Component<Props, State> {
     );
   }
 
-  private onEncoderTypeChange = (event: Event) => {
-    const el = event.currentTarget as HTMLSelectElement;
-
-    // The select element only has values matching encoder types,
-    // so 'as' is safe here.
-    const type = el.value as OutputType;
+  private setEncoderType = (type: OutputType) => {
     this.props.onEncoderTypeChange(this.props.index, type);
   };
 
@@ -161,9 +143,6 @@ export default class Options extends Component<Props, State> {
     const encoder = encoderState && encoderMap[encoderState.type];
     const EncoderOptionComponent =
       encoder && 'Options' in encoder ? encoder.Options : undefined;
-    const encoderInfoTitle = encoderState
-      ? encoderDescriptionTitle(encoderState.type)
-      : '保留原始文件，不重新编码';
 
     return (
       <div
@@ -219,39 +198,49 @@ export default class Options extends Component<Props, State> {
 
         <h3 class={style.optionsTitle}>压缩</h3>
 
-        <section class={`${style.encoderSelectRow} ${style.optionsSection}`}>
+        <section class={`${style.encoderPicker} ${style.optionsSection}`}>
           {supportedEncoderMap ? (
-            <div class={style.encoderSelectControl}>
-              <Select
-                value={encoderState ? encoderState.type : 'identity'}
-                onChange={this.onEncoderTypeChange}
-                large
+            <div class={style.encoderGrid}>
+              <button
+                type="button"
+                class={`${style.encoderButton} ${
+                  encoderState ? '' : style.encoderButtonSelected
+                }`}
+                onClick={() => this.setEncoderType('identity')}
               >
-                <option value="identity" title={encoderInfoTitle}>{`原图 ${
-                  this.props.source ? `(${this.props.source.file.name})` : ''
-                }`}</option>
-                {Object.entries(supportedEncoderMap).map(([type, encoder]) => (
-                  <option
-                    value={type}
-                    title={encoderDescriptionTitle(
-                      type as keyof typeof encoderMap,
-                    )}
-                  >{`${encoder.meta.label} ⓘ`}</option>
-                ))}
-              </Select>
-              <span
-                class={style.encoderInfo}
-                title={encoderInfoTitle}
-                aria-label={encoderInfoTitle}
-                tabIndex={0}
-              >
-                ⓘ
-              </span>
+                <span class={style.encoderName}>原图</span>
+                <span class={style.encoderHint}>
+                  {this.props.source
+                    ? this.props.source.file.name
+                    : '不重新编码'}
+                </span>
+              </button>
+              {sortedEncoderEntries(supportedEncoderMap).map(
+                ([type, encoder]) => {
+                  const encoderType = type as EncoderType;
+                  return (
+                    <button
+                      type="button"
+                      class={`${style.encoderButton} ${
+                        encoderState && encoderState.type === encoderType
+                          ? style.encoderButtonSelected
+                          : ''
+                      }`}
+                      onClick={() => this.setEncoderType(encoderType)}
+                    >
+                      <span class={style.encoderName}>
+                        {encoder.meta.label}
+                      </span>
+                      <span class={style.encoderHint}>
+                        {encoderDescriptions[encoderType]}
+                      </span>
+                    </button>
+                  );
+                },
+              )}
             </div>
           ) : (
-            <Select large>
-              <option>加载中…</option>
-            </Select>
+            <div class={style.encoderLoading}>加载中…</div>
           )}
         </section>
 

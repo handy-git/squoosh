@@ -149,8 +149,6 @@ function defaultEncoderTypeForFile(file: File): EncoderType {
   }
   if (mimeType === 'image/webp' || /\.webp$/i.test(filename)) return 'webP';
   if (mimeType === 'image/avif' || /\.avif$/i.test(filename)) return 'avif';
-  if (mimeType === 'image/jxl' || /\.jxl$/i.test(filename)) return 'jxl';
-  if (mimeType === 'image/webp2' || /\.wp2$/i.test(filename)) return 'wp2';
   if (mimeType === 'image/qoi' || /\.qoi$/i.test(filename)) return 'qoi';
 
   return 'webP';

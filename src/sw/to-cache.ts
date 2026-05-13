@@ -36,8 +36,6 @@ import * as jxlEncMtSimd from 'entry-data:codecs/jxl/enc/jxl_enc_mt_simd';
 import * as jxlEncMt from 'entry-data:codecs/jxl/enc/jxl_enc_mt';
 import * as jxlEnc from 'entry-data:codecs/jxl/enc/jxl_enc';
 
-// OXI
-import * as oxiMt from 'entry-data:codecs/oxipng/pkg-parallel/squoosh_oxipng';
 import * as oxi from 'entry-data:codecs/oxipng/pkg/squoosh_oxipng';
 
 // WebP
@@ -126,11 +124,7 @@ export const theRest = (async () => {
   }
 
   // OXI
-  if (supportsThreads) {
-    addWithDeps(oxiMt);
-  } else {
-    addWithDeps(oxi);
-  }
+  addWithDeps(oxi);
 
   // WebP
   if (supportsSimd) {
