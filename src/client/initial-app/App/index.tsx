@@ -13,6 +13,7 @@ import Intro from 'shared/prerendered-app/Intro';
 import 'shared/custom-els/loading-spinner';
 
 const ROUTE_EDITOR = '/editor';
+const MOBILE_QUERY = '(max-width: 599px)';
 
 const compressPromise = import('client/lazy-app/Compress');
 const swBridgePromise = import('client/lazy-app/sw-bridge');
@@ -82,13 +83,14 @@ export default class App extends Component<Props, State> {
 
   private onFileDrop = ({ files }: FileDropEvent) => {
     if (!files || files.length === 0) return;
-    const nextFiles = Array.from(files);
+    const nextFiles = this.filesForCurrentView(Array.from(files));
     this.openEditor();
     this.setState({ files: nextFiles, selectedFileIndex: 0 });
   };
 
   private onIntroPickFiles = (files: File[]) => {
     if (files.length === 0) return;
+    files = this.filesForCurrentView(files);
     this.openEditor();
     this.setState({ files, selectedFileIndex: 0 });
   };
@@ -103,6 +105,12 @@ export default class App extends Component<Props, State> {
       files: [...state.files, ...nextFiles],
     }));
   };
+
+  private filesForCurrentView(files: File[]): File[] {
+    if (!matchMedia(MOBILE_QUERY).matches || files.length <= 1) return files;
+    this.showSnack('移动端仅支持单张图片，已使用第一张');
+    return files.slice(0, 1);
+  }
 
   private showSnack = (
     message: string,

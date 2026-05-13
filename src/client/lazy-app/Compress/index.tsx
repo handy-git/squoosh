@@ -34,6 +34,7 @@ import { resize } from 'features/processors/resize/client';
 import type SnackBarElement from 'shared/custom-els/snack-bar';
 import { drawableToImageData } from '../util/canvas';
 import { linkRef } from 'shared/prerendered-app/util';
+import MobileCompressLayout from './MobileCompressLayout';
 
 export type OutputType = EncoderType | 'identity';
 
@@ -741,7 +742,16 @@ export default class Compress extends Component<Props, State> {
     const fileInput = event.target as HTMLInputElement;
     const files = fileInput.files ? Array.from(fileInput.files) : [];
     fileInput.value = '';
-    this.props.onAddFiles(files.filter(isImageFile));
+    const imageFiles = files.filter(isImageFile);
+    if (!this.state.mobileView) {
+      this.props.onAddFiles(imageFiles);
+      return;
+    }
+
+    if (imageFiles.length > 1) {
+      this.props.showSnack('移动端仅支持单张图片，已使用第一张');
+    }
+    this.props.onAddFiles(imageFiles.slice(0, 1));
   };
 
   private onOpenAddFilesClick = () => {
@@ -1320,6 +1330,25 @@ export default class Compress extends Component<Props, State> {
       ? encoderMap[batchSettings.encoderState.type].meta.label
       : '未选择';
 
+    if (mobileView) {
+      return (
+        <MobileCompressLayout
+          source={source}
+          preprocessorState={preprocessorState}
+          leftCompressed={leftImageData}
+          rightCompressed={rightImageData}
+          leftImgContain={leftImgContain}
+          rightImgContain={rightImgContain}
+          rightOptions={rightOptions}
+          downloadUrl={rightSide.downloadUrl}
+          imageFile={rightSide.file}
+          loading={loading || rightSide.loading}
+          onBack={onBack}
+          onPreprocessorChange={this.onPreprocessorChange}
+        />
+      );
+    }
+
     return (
       <div class={style.compress}>
         <div class={style.batchPanel}>
@@ -1468,19 +1497,10 @@ export default class Compress extends Component<Props, State> {
             />
           </svg>
         </button>
-        {mobileView ? (
-          <div class={style.options}>
-            <multi-panel class={style.multiPanel} open-one-only>
-              <div class={style.options2Theme}>{rightResults}</div>
-              <div class={style.options2Theme}>{rightOptions}</div>
-            </multi-panel>
-          </div>
-        ) : (
-          <div class={style.options2}>
-            {rightOptions}
-            {rightResults}
-          </div>
-        )}
+        <div class={style.options2}>
+          {rightOptions}
+          {rightResults}
+        </div>
       </div>
     );
   }
